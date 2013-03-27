@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
-       width="400" height="400" styleName="radio" initialize="init()" clipContent="false">
--->
 <mx:Application
        xmlns:fx="http://ns.adobe.com/mxml/2009"
        xmlns:s="library://ns.adobe.com/flex/spark"
@@ -37,10 +34,10 @@
       private var audioLoader:URLLoader;
       private var xmlLoader:URLLoader;
       private var xmlResponse:XML;
+      private var plsLines:Array;
 
       private function init():void {
-        //requestStation();
-        loadSound("http://wamu-3.streamguys.com:80");
+        requestStation();
       }
 
       private function consoleLog(message:String):void {
@@ -63,15 +60,12 @@
       }
 
       public function loadSound(url:String):void{
-        consoleLog("loading sound");
         var mySound = new Sound();
         mySound.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
         mySound.addEventListener(ProgressEvent.PROGRESS, progressHandler);
 
         var request:URLRequest = new URLRequest(url);
-        consoleLog("loading sound");
         mySound.load(request);
-        consoleLog("loading sound");
         mySound.play();
       }
 
@@ -86,11 +80,24 @@
       private function xmlComplete(event:Event):void {
         var xmlLoadie:URLLoader = URLLoader(event.target);
         xmlResponse = new XML(xmlLoadie.data);
-        loadSound("http://static.wamu.org/streams/live/3/live_aac.pls");
+        // loadSound();
+      }
+
+      private function plsLoaded(event:Event):void {
+        var mp3FileUrl:String;
+        plsLines = event.target.data.split(/\n/);
+        for (var i:int=0; i<plsLines.length; i++){
+          var element:String = plsLines[i];
+          if (element.search("File1") >= 0) {
+            mp3FileUrl = element.substr(6);
+            break;
+          }
+        }
+        loadSound(mp3FileUrl);
       }
 
       private function configureListeners(dispatcher:IEventDispatcher):void {
-          dispatcher.addEventListener(Event.COMPLETE, completeHandler);
+          //dispatcher.addEventListener(Event.COMPLETE, completeHandler);
           dispatcher.addEventListener(Event.OPEN, openHandler);
           dispatcher.addEventListener(ProgressEvent.PROGRESS, progressHandler);
           dispatcher.addEventListener(SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler);
@@ -129,8 +136,4 @@
       }
     ]]>
   </fx:Script>
-
-
-<!-- </mx:Canvas>
- -->
  </mx:Application>
