@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+       width="400" height="400" styleName="radio" initialize="init()" clipContent="false">
+-->
+<mx:Application
+       xmlns:fx="http://ns.adobe.com/mxml/2009"
+       xmlns:s="library://ns.adobe.com/flex/spark"
+       xmlns:mx="library://ns.adobe.com/flex/mx"
+       initialize="init()"
+       width="650"
+       height="450"
+       horizontalScrollPolicy="off"
+       verticalScrollPolicy="off"
+       paddingTop="0"
+       paddingBottom="0"
+       paddingLeft="0"
+       paddingRight="0">
+
+  <fx:Script>
+    <![CDATA[
+
+      import flash.events.Event;
+      import flash.events.IOErrorEvent;
+      import flash.events.MouseEvent;
+      import flash.events.ProgressEvent;
+      import flash.events.TimerEvent;
+      import flash.media.Sound;
+      import flash.media.SoundChannel;
+      import flash.media.SoundTransform;
+      import flash.net.URLRequest;
+      import flash.utils.Timer;
+      import flash.external.ExternalInterface;
+
+      import mx.controls.Alert;
+      import mx.events.FlexEvent;
+
+      private var audioLoader:URLLoader;
+      private var xmlLoader:URLLoader;
+      private var xmlResponse:XML;
+
+      private function init():void {
+        Alert.show("init!!! : ");
+        requestStation();
+      }
+
+      private function consoleLog(message:String):void {
+        if (ExternalInterface.available){
+          message = "[PhotoBooth Log] " + message;
+          ExternalInterface.call("console.log", message);
+          ExternalInterface.call("debugLog", message);
+        }
+      }
+
+      private function requestStation():void {
+        var stationUrl:String = "http://api.npr.org/stations?callLetters=WAMU&apiKey=MDExMTEwNDYyMDEzNjQzMzg5ODMzYzdlMA001";
+        xmlLoader = new URLLoader();
+        xmlLoader.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
+        xmlLoader.addEventListener(Event.COMPLETE, xmlComplete);
+        consoleLog("in request station");
+        var request:URLRequest = new URLRequest(stationUrl);
+
+        loadSomething(xmlLoader, request);
+      }
+
+      public function loadSound(url:String):void{
+        var mySound = new Sound();
+        // mySound.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+        mySound.addEventListener(ProgressEvent.PROGRESS, progressHandler);
+
+        var request:URLRequest = new URLRequest(url);
+        mySound.load(request);
+        mySound.play();
+      }
+
+      private function loadSomething(loader, request):void {
+        try {
+          Alert.show("loading");
+          consoleLog("loading");
+          loader.load(request);
+        } catch (error:Error) {
+          consoleLog("Unable to load requested document. " + error.message);
+          trace("Unable to load requested document.");
+        }
+      }
+
+      private function xmlComplete(event:Event):void {
+        var loader:URLLoader = URLLoader(event.target);
+
+        xmlResponse = loader.data;
+        loadSound("http://static.wamu.org/streams/live/3/live_aac.pls");
+        Alert.show("completeHandler: " + loader.data);
+        consoleLog("completeHandler: " + loader.data);
+        trace("completeHandler: " + loader.data);
+      }
+
+      private function configureListeners(dispatcher:IEventDispatcher):void {
+          dispatcher.addEventListener(Event.COMPLETE, completeHandler);
+          dispatcher.addEventListener(Event.OPEN, openHandler);
+          dispatcher.addEventListener(ProgressEvent.PROGRESS, progressHandler);
+          dispatcher.addEventListener(SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler);
+          dispatcher.addEventListener(HTTPStatusEvent.HTTP_STATUS, httpStatusHandler);
+          dispatcher.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
+      }
+
+      private function completeHandler(event:Event):void {
+          var loader:URLLoader = URLLoader(event.target);
+          trace("completeHandler: " + loader.data);
+      }
+
+      private function openHandler(event:Event):void {
+          trace("openHandler: " + event);
+      }
+
+      private function progressHandler(event:ProgressEvent):void {
+          trace("progressHandler loaded:" + event.bytesLoaded + " total: " + event.bytesTotal);
+      }
+
+      private function securityErrorHandler(event:SecurityErrorEvent):void {
+          trace("securityErrorHandler: " + event);
+      }
+
+      private function httpStatusHandler(event:HTTPStatusEvent):void {
+          trace("httpStatusHandler: " + event);
+      }
+
+      private function ioErrorHandler(event:IOErrorEvent):void {
+          consoleLog("ioErrorHandler: " + event);
+          trace("ioErrorHandler: " + event);
+      }
+    ]]>
+  </fx:Script>
+
+
+<!-- </mx:Canvas>
+ -->
+ </mx:Application>
