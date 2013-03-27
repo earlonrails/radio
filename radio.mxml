@@ -39,13 +39,13 @@
       private var xmlResponse:XML;
 
       private function init():void {
-        Alert.show("init!!! : ");
-        requestStation();
+        //requestStation();
+        loadSound("http://wamu-3.streamguys.com:80");
       }
 
       private function consoleLog(message:String):void {
         if (ExternalInterface.available){
-          message = "[PhotoBooth Log] " + message;
+          message = "[radio] " + message;
           ExternalInterface.call("console.log", message);
           ExternalInterface.call("debugLog", message);
         }
@@ -55,42 +55,38 @@
         var stationUrl:String = "http://api.npr.org/stations?callLetters=WAMU&apiKey=MDExMTEwNDYyMDEzNjQzMzg5ODMzYzdlMA001";
         xmlLoader = new URLLoader();
         xmlLoader.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
+        xmlLoader.addEventListener(ProgressEvent.PROGRESS, progressHandler);
         xmlLoader.addEventListener(Event.COMPLETE, xmlComplete);
-        consoleLog("in request station");
-        var request:URLRequest = new URLRequest(stationUrl);
 
+        var request:URLRequest = new URLRequest(stationUrl);
         loadSomething(xmlLoader, request);
       }
 
       public function loadSound(url:String):void{
+        consoleLog("loading sound");
         var mySound = new Sound();
-        // mySound.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+        mySound.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
         mySound.addEventListener(ProgressEvent.PROGRESS, progressHandler);
 
         var request:URLRequest = new URLRequest(url);
+        consoleLog("loading sound");
         mySound.load(request);
+        consoleLog("loading sound");
         mySound.play();
       }
 
-      private function loadSomething(loader, request):void {
+      private function loadSomething(loadie, request):void {
         try {
-          Alert.show("loading");
-          consoleLog("loading");
-          loader.load(request);
+          loadie.load(request);
         } catch (error:Error) {
           consoleLog("Unable to load requested document. " + error.message);
-          trace("Unable to load requested document.");
         }
       }
 
       private function xmlComplete(event:Event):void {
-        var loader:URLLoader = URLLoader(event.target);
-
-        xmlResponse = loader.data;
+        var xmlLoadie:URLLoader = URLLoader(event.target);
+        xmlResponse = new XML(xmlLoadie.data);
         loadSound("http://static.wamu.org/streams/live/3/live_aac.pls");
-        Alert.show("completeHandler: " + loader.data);
-        consoleLog("completeHandler: " + loader.data);
-        trace("completeHandler: " + loader.data);
       }
 
       private function configureListeners(dispatcher:IEventDispatcher):void {
@@ -104,28 +100,32 @@
 
       private function completeHandler(event:Event):void {
           var loader:URLLoader = URLLoader(event.target);
-          trace("completeHandler: " + loader.data);
+          consoleLog("completeHandler: " + loader.data);
       }
 
       private function openHandler(event:Event):void {
-          trace("openHandler: " + event);
+          consoleLog("openHandler: " + event);
       }
 
       private function progressHandler(event:ProgressEvent):void {
-          trace("progressHandler loaded:" + event.bytesLoaded + " total: " + event.bytesTotal);
+
+          consoleLog("progressHandler loaded:" + event.bytesLoaded + " total: " + event.bytesTotal);
       }
 
       private function securityErrorHandler(event:SecurityErrorEvent):void {
-          trace("securityErrorHandler: " + event);
+          consoleLog("securityErrorHandler: " + event);
       }
 
       private function httpStatusHandler(event:HTTPStatusEvent):void {
-          trace("httpStatusHandler: " + event);
+          consoleLog("httpStatusHandler: " + event);
+      }
+
+      private function errorHandler(event:IOErrorEvent):void {
+          consoleLog("errorHandler: " + event);
       }
 
       private function ioErrorHandler(event:IOErrorEvent):void {
           consoleLog("ioErrorHandler: " + event);
-          trace("ioErrorHandler: " + event);
       }
     ]]>
   </fx:Script>
