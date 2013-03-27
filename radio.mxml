@@ -37,10 +37,11 @@
       private var audioLoader:URLLoader;
       private var xmlLoader:URLLoader;
       private var xmlResponse:XML;
+      private var radioStationURLs:Array = new Array();
 
       private function init():void {
-        //requestStation();
-        loadSound("http://wamu-3.streamguys.com:80");
+        requestStation();
+        //loadSound("http://wamu-3.streamguys.com:80");
       }
 
       private function consoleLog(message:String):void {
@@ -59,12 +60,17 @@
         xmlLoader.addEventListener(Event.COMPLETE, xmlComplete);
 
         var request:URLRequest = new URLRequest(stationUrl);
-        loadSomething(xmlLoader, request);
+
+        try {
+          xmlLoader.load(request)
+        } catch (error:Error) {
+          consoleLog("Unable to load requested document. " + error.message);
+        }
       }
 
       public function loadSound(url:String):void{
         consoleLog("loading sound");
-        var mySound = new Sound();
+        var mySound:Sound = new Sound();
         mySound.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
         mySound.addEventListener(ProgressEvent.PROGRESS, progressHandler);
 
@@ -75,17 +81,18 @@
         mySound.play();
       }
 
-      private function loadSomething(loadie, request):void {
-        try {
-          loadie.load(request);
-        } catch (error:Error) {
-          consoleLog("Unable to load requested document. " + error.message);
-        }
-      }
-
       private function xmlComplete(event:Event):void {
-        var xmlLoadie:URLLoader = URLLoader(event.target);
-        xmlResponse = new XML(xmlLoadie.data);
+        xmlResponse = new XML(event.target.data);
+        //Alert.show(xmlResponse.station.url.(@type == "Audio MP3 Stream"));
+
+        for(var i:Number=0;i < xmlResponse.station.url.length(); i++){
+          if ( xmlResponse.station.url[i].@type.indexOf("MP3") > 0 ) {
+            radioStationURLs.push(xmlResponse.station.url[i]);
+          }
+        }
+
+        Alert.show(radioStationURLs.toString());
+
         loadSound("http://static.wamu.org/streams/live/3/live_aac.pls");
       }
 
